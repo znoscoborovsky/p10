@@ -25,6 +25,14 @@ class UserSerializer(serializers.ModelSerializer):
             return user
         except KeyError:
             raise serializers.ValidationError('a required field is missing')
-        
+    
+    def update(self, instance, validated_data):
+        user = super().update(instance, validated_data)
+        try:
+            user.set_password(validated_data['password'])
+            user.save()
+        except KeyError:
+            pass
+        return user
+    
 
-    #def update(self, instance, validated_data):
