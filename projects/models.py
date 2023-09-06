@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+import uuid
 
 class Projects(models.Model):
     BACK_END = "BACK_END"
@@ -13,12 +14,12 @@ class Projects(models.Model):
         (IOS , "IOS"),
         (ANDROID , "ANDROID"),
     )
-
-    title = models.CharField(max_length=30, verbose_name='titre_du_projet')
-    description = models.TextField(max_length=2048, verbose_name='description_du_projet')
-    type = models.CharField(max_length=30, choices=TYPE_CHOICES, verbose_name='Type_de_projet')
+    created_time = models.DateTimeField(auto_now_add=True, null=True)
+    title = models.CharField(max_length=100, verbose_name='titre du projet')
+    description = models.TextField(max_length=2048, verbose_name='description du projet')
+    type = models.CharField(max_length=30, choices=TYPE_CHOICES, verbose_name='Type de projet')
     author = models.ForeignKey(to=settings.AUTH_USER_MODEL,
-                              on_delete=models.CASCADE, related_name='auteur_projet')
+                              on_delete=models.CASCADE, related_name='author_projet')
 
     def __str__(self):
         return self.title
@@ -52,32 +53,37 @@ class Issues(models.Model):
         (TO_DO , "TO_DO"),
         (IN_PROGRESS , "IN_PROGRESS"),
         (FINISHED , "FINISHED"),
-    )       
+    )
+    
+    created_time = models.DateTimeField(auto_now_add=True, null=True)
+    title = models.CharField(max_length=100, verbose_name='titre de la tache')
     project = models.ForeignKey(Projects,
                               on_delete=models.CASCADE, 
-                              related_name='projet')
-    created_time = models.DateTimeField(auto_now_add=True, null=True)
+                              related_name='project')
     description = models.TextField(max_length=2048, 
-                                   verbose_name='description_du_probleme')
+                                   verbose_name='description du probleme')
     status = models.CharField(max_length=30, 
                               choices=TYPE_CHOICES_STATUS, 
-                              verbose_name='priorite')
+                              verbose_name='statut')
     priority = models.CharField(max_length=30, 
                                 choices=TYPE_CHOICES_PRIORITY, 
                                 verbose_name='priorite')
     balise = models.CharField(max_length=30, 
                               choices=TYPE_CHOICES_BALISE, 
                               verbose_name='balise')
-    assignee_user =  models.OneToOneField(
-        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
-        primary_key=True,
-        related_name="utilisateur_affecté")
+    assignee_user =  models.ForeignKey(
+                                    settings.AUTH_USER_MODEL, 
+                                    on_delete=models.CASCADE,
+                                    related_name="assigne")
     
 class Comments(models.Model):
-    description = models.TextField(max_length=2048, verbose_name='description_du_commentaire')
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=100, verbose_name='titre du commentaire')    
+    created_time = models.DateTimeField(auto_now_add=True, null=True)
+    description = models.TextField(max_length=2048, verbose_name='description du commentaire')
     issue = models.ForeignKey(Issues, 
                                 on_delete=models.CASCADE, 
-                                related_name='projet')
+                                related_name='comment')
     author = models.ForeignKey(to=settings.AUTH_USER_MODEL,
                               on_delete=models.CASCADE, 
                               related_name='auteur_comment') 
